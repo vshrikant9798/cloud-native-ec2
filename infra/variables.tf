@@ -11,7 +11,7 @@ variable "key_name" {
 }
 
 variable "public_key_path" {
-  default = "../deploy_key.pub"
+  default = "./deploy_key.pub"
 }
 
 variable "ami_id" {
