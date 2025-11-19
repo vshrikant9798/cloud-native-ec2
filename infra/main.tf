@@ -53,12 +53,41 @@ resource "aws_security_group" "app_sg" {
   }
 }
 
+# IAM Role for EC2 to access ECR
+resource "aws_iam_role" "ec2_role" {
+  name = "${var.name_prefix}-ec2-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "ec2.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+# Attach predefined AmazonEC2ContainerRegistryReadOnly policy
+resource "aws_iam_role_policy_attachment" "ecr_readonly" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
+# Instance profile (required to attach role to EC2)
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = "${var.name_prefix}-instance-profile"
+  role = aws_iam_role.ec2_role.name
+}
+
 resource "aws_instance" "app_server" {
-  ami           = var.ami_id
-  instance_type = var.instance_type
-  key_name      = aws_key_pair.deployer.key_name
-  vpc_security_group_ids = [aws_security_group.app_sg.id]
-  subnet_id = var.subnet_id
+  ami                         = var.ami_id
+  instance_type               = var.instance_type
+  key_name                    = aws_key_pair.deployer.key_name
+  vpc_security_group_ids      = [aws_security_group.app_sg.id]
+  subnet_id                   = var.subnet_id
+  iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
 
   user_data = <<-EOF
     #!/bin/bash
