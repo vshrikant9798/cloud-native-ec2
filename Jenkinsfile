@@ -90,7 +90,7 @@ pipeline {
                     sudo docker pull ${ECR_URL}:${BUILD_NUMBER}
                     sudo docker stop app || true
                     sudo docker rm app || true
-                    sudo docker run -d --name app -p 80:3000 ${ECR_URL}:${BUILD_NUMBER}
+                    sudo docker run -d --name app -p 80:8080 ${ECR_URL}:${BUILD_NUMBER}
                 '
             """
         }
