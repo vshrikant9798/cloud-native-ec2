@@ -80,18 +80,21 @@ pipeline {
         }
 
         stage('Deploy to EC2') {
-            steps {
-                sshagent(['ec2-ssh-key']) {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no ubuntu@${EC2_IP} '
-                            sudo docker pull ${ECR_URL}:${BUILD_NUMBER}
-                            sudo docker stop app || true
-                            sudo docker rm app || true
-                            sudo docker run -d --name app -p 80:3000 ${ECR_URL}:${BUILD_NUMBER}
-                        '
-                    """
-                }
-            }
+    steps {
+        sshagent(['ec2-ssh-key']) {
+            sh """
+                ssh -o StrictHostKeyChecking=no ubuntu@${EC2_IP} '
+                    aws ecr get-login-password --region ${AWS_REGION} | \
+                    sudo docker login --username AWS --password-stdin ${ECR_URL}
+
+                    sudo docker pull ${ECR_URL}:${BUILD_NUMBER}
+                    sudo docker stop app || true
+                    sudo docker rm app || true
+                    sudo docker run -d --name app -p 80:3000 ${ECR_URL}:${BUILD_NUMBER}
+                '
+            """
         }
+    }
+}
     }
 }
