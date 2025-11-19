@@ -12,7 +12,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/<your-username>/<your-repo>.git'   // 🔧 modify this
+                git branch: 'main', url: 'https://github.com/vshrikant9798/cloud-native-ec2.git'   // 🔧 modify this
             }
         }
 
